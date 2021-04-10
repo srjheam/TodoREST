@@ -1,0 +1,68 @@
+﻿@page "/todolist"
+
+@using Todo.Core.Models;
+@using Todo.Web.Services;
+@inject TodoService TodoService
+
+<h3>To Do (@todoList.Count(todo => !todo.IsDone))</h3>
+
+<ul>
+    @foreach (var todo in todoList)
+    {
+        
+        var titleBackup = todo.Title;
+        <li>
+            <input type="checkbox" @bind="todo.IsDone" @onclick="async () => await CheckboxClicked(todo)" />
+            <input @bind="todo.Title" @onfocusin="() => titleBackup = todo.Title" @onfocusout="() => ChangeTodoTile(todo, titleBackup)" />
+        </li>
+    }
+</ul>
+
+<input placeholder="Add a task" @bind="newTodo" />
+<button @onclick="AddTodo">Add</button>
+
+@code {
+    private List<TodoItem> todoList = new();
+    private string newTodo;
+
+    protected override async Task OnInitializedAsync() =>
+        todoList = (await TodoService.GetTodoList()).ToList();
+    
+    private async Task AddTodo()
+    {
+        if (!string.IsNullOrWhiteSpace(newTodo))
+        {
+            var result = await TodoService.AddTodo(newTodo);
+            if (result.IsSuccess)
+            {
+                todoList.Add(result.NewTodo);
+            }
+            newTodo = string.Empty;
+        }
+    }
+
+    private async Task CheckboxClicked(TodoItem todo)
+    {
+        todo.IsDone = !todo.IsDone;
+        var result = await TodoService.ChangeValues(todo);
+        var myBool = false;
+        if (myBool)
+        {
+            todo.IsDone = !todo.IsDone;
+        }
+    }
+
+    private async Task ChangeTodoTile(TodoItem todo, string titleBackup)
+    {
+        if (string.IsNullOrWhiteSpace(todo.Title) || todo.Title == titleBackup)
+        {
+            todo.Title = titleBackup;
+            return;
+        }
+
+        if (!(await TodoService.ChangeValues(todo)))
+        {
+            todo.Title = titleBackup;
+        }
+    }
+}

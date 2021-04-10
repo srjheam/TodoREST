@@ -3,10 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TodoApi.Data;
-using TodoApi.Models;
+using Todo.Api.Data;
+using Todo.Core.Models;
 
-namespace TodoApi.Controllers
+namespace Todo.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
