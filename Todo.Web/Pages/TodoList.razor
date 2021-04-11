@@ -1,4 +1,4 @@
-﻿@page "/todolist"
+﻿@page "/"
 
 @using Todo.Core.Models;
 @using Todo.Web.Services;
@@ -27,7 +27,7 @@
 
     protected override async Task OnInitializedAsync() =>
         todoList = (await TodoService.GetTodoList()).ToList();
-    
+
     private async Task AddTodo()
     {
         if (!string.IsNullOrWhiteSpace(newTodo))
@@ -44,12 +44,10 @@
     private async Task CheckboxClicked(TodoItem todo)
     {
         todo.IsDone = !todo.IsDone;
-        var result = await TodoService.ChangeValues(todo);
-        var myBool = false;
-        if (myBool)
-        {
-            todo.IsDone = !todo.IsDone;
-        }
+        await TodoService.ChangeValues(todo);
+        // I couldn't find any way to change the value of the checkbox in case
+        // there is a failure in the communication with the API, so if you know
+        // how to do this help me here! :D
     }
 
     private async Task ChangeTodoTile(TodoItem todo, string titleBackup)
