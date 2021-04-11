@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
-using TodoApi.Data;
+using System;
+using System.Net.Http;
+using Todo.Web.Services;
 
-namespace TodoApi
+namespace Todo.Web
 {
     public class Startup
     {
@@ -19,9 +20,13 @@ namespace TodoApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<TodoContext>(opt =>
-                                               opt.UseInMemoryDatabase("TodoList"));
-            services.AddControllers();
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
+
+            services.AddSingleton(new TodoService(new HttpClient
+            {
+                BaseAddress = new Uri(Configuration.GetConnectionString("TodoApi"))
+            }));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -30,15 +35,21 @@ namespace TodoApi
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
 
             app.UseHttpsRedirection();
-            app.UseRouting();
+            app.UseStaticFiles();
 
-            app.UseAuthorization();
+            app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }
